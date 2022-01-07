@@ -1,0 +1,45 @@
+---
+- hosts: webservers
+  become: yes
+  tasks:
+  - name: Install pip
+    package: 
+     name: python3-pip 
+     state: present
+
+  - name: Copy Project files.
+    ansible.builtin.copy:
+     src: /var/lib/jenkins/workspace/Project1/website/
+     dest: /home/edureka/project1/
+
+  - name: remove image
+    docker_image:
+     name: phpwebsite
+     state: absent
+
+  - name: stop a container
+    docker_container:
+     name: PHPProject
+     state: absent
+
+  - name: Install docker-py
+    pip: name=docker-py
+
+  - name: Build Docker image from Dockerfile
+    docker_image:
+     name: phpwebsite
+     build:
+      pull: yes
+      path: "/home/edureka/project1/"
+     state: present
+     source: build
+      
+  - name: Running the container
+    docker_container:
+     name: PHPProject
+     image: phpwebsite:latest
+     state: started
+
+  - name: check If Container is running
+    shell: docker ps
+...
